@@ -1,0 +1,28 @@
+---
+- name: APT | Update Cache
+  sudo: yes
+  apt:
+    update_cache: yes
+    cache_valid_time: "{{ apt_cache_valid_time }}"
+
+- name: APT | Upgrade APT packages
+  sudo: yes
+  apt:
+    upgrade: yes
+
+- name: APT | Install System packages
+  sudo: yes
+  apt:
+    pkg: "{{ item }}"
+    state: latest
+  with_items:
+    # - git
+    # - python
+    # - curl
+    # - libcurl4-openssl-dev
+    # - libxslt-dev
+    # - libxml2-dev
+    # - libmysqlclient-dev
+    # - sendmail
+    - apt_packages
+  when: apt_packages is defined
