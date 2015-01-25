@@ -1,28 +1,79 @@
 ---
+# file: apt/taks/main.yml
+
+- name: APT | Reset the sources.list
+  sudo: yes
+  copy:
+    src: etc_apt_sources.list
+    dest: /etc/apt/sources.list
+    owner: root
+    group: root
+    mode: 0644
+  when: apt_reset_source_list
+  tags: apt
+
 - name: APT | Update Cache
   sudo: yes
   apt:
     update_cache: yes
     cache_valid_time: "{{ apt_cache_valid_time }}"
+  tags: apt
 
-- name: APT | Upgrade APT packages
+- name: APT | Create general configuration files
   sudo: yes
-  apt:
-    upgrade: yes
+  template:
+    src: etc_apt_apt.conf.d_10general.j2
+    dest: /etc/apt/apt.conf.d/10general
+    owner: root
+    group: root
+    mode: 0644
+  tags: apt
 
-- name: APT | Install System packages
+- name: APT | Upgrade packages
+  sudo: yes
+  apt: upgrade=dist
+  tags: apt
+
+- name: APT | Remove dependencies packages no longer needed
+  sudo: yes
+  shell: apt-get -y autoremove
+  when: apt_auto_remove
+  tags: apt
+
+- name: APT | Remove .deb files for packages no longer on the system
+  sudo: yes
+  shell: apt-get -y autoclean
+  when: apt_auto_clean
+  tags: apt
+
+- name: APT | Install APT packages
   sudo: yes
   apt:
     pkg: "{{ item }}"
     state: latest
   with_items:
-    # - git
-    # - python
-    # - curl
-    # - libcurl4-openssl-dev
-    # - libxslt-dev
-    # - libxml2-dev
-    # - libmysqlclient-dev
-    # - sendmail
+    - python-apt
+    - curl
+    - libcurl4-openssl-dev
+    - libxslt-dev
+    - libxml2-dev
+    - sendmail
+  tags: apt
+
+- name: APT | Install Unattended Upgrades
+  sudo: yes
+  apt:
+    pkg: unattended-upgrades
+    state: present
+  when: apt_unattended_upgrades
+  tags: apt
+
+- name: APT | Install APP packages
+  sudo: yes
+  apt:
+    pkg: "{{ item }}"
+    state: latest
+  with_items:
     - apt_packages
   when: apt_packages is defined
+  tags: apt

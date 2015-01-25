@@ -1,15 +1,30 @@
 ---
+# file: apt/defaults/main.yml
+
+# There are always some security risks involved in running software upgrades
+# without supervision, but there are also benefits. If you believe it's
+# important to stay up to date with the latest security patches, then you leave
+# this option enabled, otherwise update your playbook
+#
+apt_unattended_upgrades: "{{ apt_security_updates | default( true ) }}"
+
+# Reset the sources.list to the default
+#
+apt_reset_source_list: "{{ apt_reset_source | default( false ) }}"
 
 # Sets the amount of time the cache is valid
 #
-apt_cache_valid_time: {{ apt.cache_time | default('60 * 60') }}
+apt_cache_valid_time: "{{ apt_cache_time | default( 3600 ) }}"
 
-# APT by default does not specify wether or not "recommended" packages should
-# be installed
+# Whether or not to install the "recommended" or "suggested" packages
 #
-apt_install_recommends: {{ apt.recommended | default('false') }}
+apt_install_recommends: "{{ apt_recommended | default( false ) }}"
+apt_install_suggests: "{{ apt_suggested | default( false ) }}"
 
-# APT by default does not specify wether or not "suggested" packages should be
-# installed
+# Remove packages that are no longer needed for dependencies
 #
-apt_install_sugggets: {{ apt.suggested | default('false') }}
+apt_auto_remove: "{{ apt_remove_dependencies | default( true ) }}"
+
+# Remove .deb files for packages no longer on your system
+#
+apt_auto_clean: "{{ apt_clean_packages | default( false ) }}"
